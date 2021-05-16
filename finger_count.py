@@ -105,6 +105,8 @@ def fingerCount(hand_landmarks, width, half_screen):
             return 2
         elif isIndex:
             return 1
+        else:
+            return 0
     elif not isFront:
         if isThumb & isIndex & isMiddle & isRing & isPinky:
             return 10
@@ -116,6 +118,8 @@ def fingerCount(hand_landmarks, width, half_screen):
             return 7
         elif isIndex:
             return 6
+        else:
+            return 0
         
 
 if __name__ == "__main__":

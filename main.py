@@ -51,7 +51,7 @@ hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5
 # ]
 
 # ELAVATOR VAR
-indiv_dict = defaultdict(lambda : 0)
+face_dict = defaultdict(lambda : 0)
 known_floor = []
 Known_floor_name = []
 elav_time = 0
@@ -104,7 +104,7 @@ while True:
         matches = face_recognition.compare_faces(known_floor, face_encoding)
         if len(matches) == 0 or True not in matches:
             known_floor.append(face_encoding)
-            # indiv_dict[str_name] = [0, 0]
+            face_dict[str_name] = [0, 0]
             Known_floor_name.append(str_name)
             recog_now[face_counter] = face_encoding
             recog_now_name[face_counter] = str_name
@@ -134,6 +134,11 @@ while True:
             if not hand_boxes_done[i] and hand_boxes[i][3] < hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].x * np_img.shape[1] < hand_boxes[i][1] and hand_boxes[i][0] < hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].y * np_img.shape[0] < hand_boxes[i][2]:
                 floor = fingerCount(hand_landmarks, resized_img.width, (hand_boxes[i][3] + hand_boxes[i][1]) // 2)
                 to_floor[i] = floor
+                print(face_dict[recog_now_name[i]])
+                if face_dict[recog_now_name[i]][1] + 1 < 10:
+                    face_dict[recog_now_name[i]] = [floor, face_dict[recog_now_name[i]][1] + 1]
+                else:
+                    face_dict[recog_now_name[i]] = [floor, 10]
                 # print(floor)
                 mp_drawing.draw_landmarks(np_img, hand_landmarks, mp_hands.HAND_CONNECTIONS)
                 hand_boxes_done[i] = True
@@ -152,9 +157,12 @@ while True:
         cv2.rectangle(overlay, (hand_boxes[i][3], hand_boxes[i][0]), (hand_boxes[i][1],hand_boxes[i][2]), (0, 0, 255), 0)
         # cv2.rectangle(overlay, (this_floor[i][0], this_floor[i][1]), (this_floor[i][2],this_floor[i][3]), (255, 0, 0), 0)
         # print(to_floor[i])
-        cv2.putText(overlay, "Name: {}".format(name_arr[i]), (hand_boxes[i][3], hand_boxes[i][0]), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 3)
+        print(face_dict[recog_now_name[i]][1])
+        if face_dict[recog_now_name[i]][1] == 10:
+            cv2.putText(overlay, "Queue: {}".format(face_dict[recog_now_name[i]][0]), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
+        # cv2.putText(overlay, "Name: {}".format(name_arr[i]), (hand_boxes[i][3], hand_boxes[i][0]), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 3)
         if(to_floor[i] != -1):
-            cv2.putText(overlay, "Name: {}, Floor: {}".format(name_arr[i], to_floor[i]), (hand_boxes[i][3], hand_boxes[i][0]), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 3)
+            cv2.putText(overlay, "Name: {}, Floor: {}".format(name_arr[i], to_floor[i]), (hand_boxes[i][3], hand_boxes[i][0]), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
         else:
             cv2.putText(overlay, "Name: {}".format(name_arr[i]), (hand_boxes[i][3], hand_boxes[i][0]), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 3)
     cv2.addWeighted(overlay, 1, output, 0, 0, output)
