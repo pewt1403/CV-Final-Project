@@ -220,14 +220,14 @@ def _postprocess_yolo(trt_outputs, img_w, img_h, conf_th, nms_threshold,
 
 class TensorRT_YOLO(object):
     def _load_engine(self):
-        TRTbin = '/home/sp18nano/seniorProject/senior-project-jetsonNano/utils/yolo/yolov4-tiny-416.trt'
+        TRTbin = '/home/cv/CV-Final-Project/utils/yolo/yolov4-tiny-hf.trt'
         with open(TRTbin, 'rb') as f, trt.Runtime(self.trt_logger) as runtime:
             return runtime.deserialize_cuda_engine(f.read())
 
     def __init__(self):
        
         self.input_shape = (416, 416)
-        self.category_num = 80
+        self.category_num = 3
         self.letter_box = None
 
         self.inference_fn = do_inference
