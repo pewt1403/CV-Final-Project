@@ -23,7 +23,7 @@ def send_http(img, floor, id):
     # print(img_text)
     r = requests.post(
         'https://59ja20.deta.dev/add_images',
-        json={"data":["data:image/jpeg;base64,"+ img_text.decode("utf-8"), floor, id]}
+        json={"data":[["data:image/jpeg;base64,"+ img_text.decode("utf-8"), floor, id]]}
         )
     # print("Sent")
     print(r)
@@ -49,7 +49,7 @@ def send_delete(id):
 
 # INIT CAMERA
 inp = jetson.utils.videoSource("v4l2:///dev/video0")
-out = jetson.utils.videoOutput("")
+out = jetson.utils.videoOutput("file:///home/cv/CV-Final-Project/demo_{}.mp4".format(time.time()))
 
 # YOLO INIT
 i = 0
@@ -85,8 +85,11 @@ try_2_reset = []
 in_queue = []
 is_sent = []
 go_2_floor = []
+face_counter = 0
+video_start = time.time()
 while True:
     # GET FRAME
+    perframe_time = time.time()
     in_img = inp.Capture(format='rgb8')
     jetson.utils.cudaDeviceSynchronize()
     # print(in_img.width, in_img.height)
@@ -123,7 +126,7 @@ while True:
     # FACE RECOGNITION
     face_encodings = face_recognition.face_encodings(np_img, this_floor)
     # print(face_encodings)
-    face_counter = 0
+    
     name_arr = []
     for face_encoding in face_encodings:
         str_name = "Unknown_{}".format(face_counter)
@@ -133,7 +136,7 @@ while True:
             face_dict[str_name] = [-1, 0]
             Known_floor_name.append(str_name)
             recog_now[face_counter] = face_encoding
-            recog_now_name[face_counter] = str_name
+            recog_now_name[face_counter] = str(str_name)
             try_2_reset.append(0)
             in_queue.append(False)
             is_sent.append(False)
@@ -142,6 +145,7 @@ while True:
         else:
             first_match_index = matches.index(True)
             str_name = recog_now_name[first_match_index]
+        # print(matches)
         name_arr.append(str_name)
 
 
@@ -154,10 +158,6 @@ while True:
     np_img.flags.writeable = True
     if results.multi_hand_landmarks:
       for hand_landmarks in results.multi_hand_landmarks:
-        # if hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].x < hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_MCP].x:
-        #     print(4)
-        # else:print(5)
-        # print(hand_landmarks)
         for i in range(len(hand_boxes)):
             # print("Compare X", hand_boxes[i][3], hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].x * np_img.shape[1], hand_boxes[i][1])
             # print("Compare Y", hand_boxes[i][0], hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP].y * np_img.shape[0], hand_boxes[i][2])
@@ -171,6 +171,7 @@ while True:
                         face_dict[recog_now_name[i]] = [-1, 0]
                         try_2_reset[i] = 0
                         is_sent[i] = False
+                        in_queue[i] = False
                         _thread.start_new_thread(send_delete, (i,))
                 else:
                     if face_dict[recog_now_name[i]][0] == floor:
@@ -181,7 +182,8 @@ while True:
                             go_2_floor[i] = floor
                             in_queue[i] = True
                     else:
-                        face_dict[recog_now_name[i]] = [floor, 0]
+                        if in_queue[i] == False:
+                            face_dict[recog_now_name[i]] = [floor, 0]
                 # print(floor)
                 mp_drawing.draw_landmarks(np_img, hand_landmarks, mp_hands.HAND_CONNECTIONS)
                 hand_boxes_done[i] = True
@@ -191,6 +193,7 @@ while True:
 
     # VISUALIZE
     # print(this_floor)
+    img2send = np_img.copy()
     overlay = np_img.copy()
     output = np_img.copy()
     # print(np_img.shape)
@@ -205,11 +208,12 @@ while True:
             for e in in_queue_idx:
                 floor_arr.append(str(go_2_floor[e]))
             floor_queue_text = " ".join(floor_arr)
-            cv2.putText(overlay, "Queue: {}".format(face_dict[recog_now_name[i]][0]), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
+            cv2.putText(overlay, "Queue: {}".format(floor_queue_text), (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
             # print("PIC SENT", this_floor[i][0], this_floor[i][2], this_floor[i][3],this_floor[i][1])
-            if is_sent[i] == False:
-                _thread.start_new_thread(send_http, (np_img[this_floor[i][0]: this_floor[i][2], this_floor[i][3]:this_floor[i][1], [2,1,0]], face_dict[recog_now_name[i]][0], i,))
-                is_sent[i] = True
+            if i < len(is_sent):
+                if is_sent[i] == False and face_dict[recog_now_name[i]][0] != -1:
+                    _thread.start_new_thread(send_http, (img2send[this_floor[i][0]: this_floor[i][2], this_floor[i][3]:this_floor[i][1], [2,1,0]], face_dict[recog_now_name[i]][0], i,))
+                    is_sent[i] = True
         if(to_floor[i] != -1 and to_floor[i] != 0):
             cv2.putText(overlay, "Name: {}, Floor: {}".format(name_arr[i], to_floor[i]), (hand_boxes[i][3], hand_boxes[i][0]), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 0, 0), 2)
         else:
@@ -223,5 +227,9 @@ while True:
     # print("Hand time: {} sec".format(add_weight_time - hand_time))
     out_img = jetson.utils.cudaFromNumpy(output)
     out.Render(out_img)
+    print("Perframe:", time.time() - perframe_time)
+    if time.time() - video_start > 75:
+        out = jetson.utils.videoOutput("file:///home/cv/CV-Final-Project/thash.mp4")
+        break
     
 
