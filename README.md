@@ -19,9 +19,10 @@ Hand Gesture Recognition with multiple users for <b>elevator control</b> in covi
 </ul>
 <h2>To use it in jetson nano</h2>
 <ul>
+  <li>Install jetson-inference</li>
   <li>Install bazel in jetson nano using Java</li>
-  <li>run ./install_pycuda.sh in folder</li>
-  <li>Handle more than 10 gestures</li>
+  <li>Install pycuda</li>
+  <li>Run make in /plugins</li>
 </ul>
 <h2>How does it work?</h2>
 <ol>
