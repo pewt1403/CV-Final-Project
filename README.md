@@ -17,7 +17,12 @@ Hand Gesture Recognition with multiple users for <b>elevator control</b> in covi
     </ul>
   </li>
 </ul>
-
+<h2>To use it in jetson nano</h2>
+<ul>
+  <li>Install bazel in jetson nano using Java</li>
+  <li>run ./install_pycuda.sh in folder</li>
+  <li>Handle more than 10 gestures</li>
+</ul>
 <h2>How does it work?</h2>
 <ol>
   <li>To handle multiple users, we decided to use YoloV4Tiny to dedects faces and scale the face areas up to cover their hands. However, handling multiple hands with uncertain positions is very hard. To solve this problem, we expect users to raise their hands beside their faces. So, we can expand the face box to cover their hands easier.
