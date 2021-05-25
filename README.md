@@ -27,7 +27,7 @@ Hand Gesture Recognition with multiple users for <b>elevator control</b> in covi
   <li>Next, MediaPipe is used to draw hand landmarks with the positions of each joint. We can identify the specific joint by the joint number provided in the library. This library is very robust. It can detect the landmarks even though the hand post is very difficult to detect.
   <img src="hand_landmarks.PNG" alt="hand landmarks">
   </li>
-  <li>Next procedure is gesture recognition algorithm. We use simple algorithm to extract finger information by using the landmark joint positions got from the previous procedure. It's all about a bunch of if-else conditions. Each finger information is extracted first. Then, we combine them to predict the number.
+  <li>The Last procedure is gesture recognition algorithm. We use simple algorithm to extract finger information by using the landmark joint positions got from the previous procedure. It's all about a bunch of if-else conditions. Each finger information is extracted first. Then, we combine them to predict the number.
   <img src="finger_conditions.PNG" alt="finger conditions">
   </li>
 </ol>
