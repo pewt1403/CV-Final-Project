@@ -26,10 +26,10 @@ Hand Gesture Recognition with multiple users for <b>elevator control</b> in covi
 </ul>
 <h2>How does it work?</h2>
 <ol>
-  <li>To handle multiple users, we decided to use YoloV4Tiny to dedects faces and scale the face areas up to cover their hands. However, handling multiple hands with uncertain positions is very hard. To solve this problem, we expect users to raise their hands beside their faces. So, we can expand the face box to cover their hands easier.
+  <li>To handle multiple users, we decided to use YoloV4Tiny to dedect faces and scale the face areas up to cover their hands. However, handling multiple hands with uncertain positions is very hard. To solve this problem, we expect users to raise their hands beside their faces. So, we can expand the face box to cover their hands easier.
   <img src="./face_detect.PNG" alt="face detection">
   </li>
-  <li>We used face recognition to reconize the owner of each hand. This information can be used later for future work.</li>
+  <li>We used face recognition to recognize the owner of each hand. This information can be used later for future work.</li>
   <li>Next, MediaPipe is used to draw hand landmarks with the positions of each joint. We can identify the specific joint by the joint number provided in the library. This library is very robust. It can detect the landmarks even though the hand post is very difficult to detect.
   <img src="hand_landmarks.PNG" alt="hand landmarks">
   </li>
