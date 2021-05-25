@@ -6,7 +6,7 @@ Hand Gesture Recognition with multiple users for <b>elevator control</b> in covi
   <li>Handle multiple hands</li>
   <li>Handle more than 10 gestures</li>
 </ul>
-<h2>Pipeline</23>
+<h2>Pipeline</h2>
 <ul>
   <li>face detection: <a href="https://github.com/cansik/yolo-hand-detection">Yolo v4 tiny</a></li>
   <li>face recognition: <a href="https://github.com/ageitgey/face_recognition">Face_Recognition</a></li>
